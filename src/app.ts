@@ -2,8 +2,8 @@
 require("dotenv").config();
 import axios from "axios";
 import Twit from "twit";
+import Account from "./account";
 
-console.log(process.env.TWITTER_API_KEY);
 const Twitter = new Twit({
   consumer_key: process.env.TWITTER_API_KEY,
   consumer_secret: process.env.TWITTER_KEY_SECRET,
@@ -12,58 +12,26 @@ const Twitter = new Twit({
   timeout_ms: 60 * 1000,
 });
 
-const getBadge = async (badgeName: string, email: string, token: string) => {
-  const link =
-    "https://flow3r-api-master-2eqj3fl3la-ue.a.run.app//v2/badges/redeem";
-  const config = {
-    headers: { Authorization: `Bearer ${token}` },
-  };
-
-  const data = {
-    email,
-    code: badgeName,
-  };
-
-  return await axios.post(link, data, config);
+const tonelive = {
+  email: "bruno.scastro2012@hotmail.com",
+  refreshToken:
+    "AFxQ4_pW17lthI8B6OsBp2VYN-yszncBv73QMlCgF6BFtf-FkQpmw-Wfn9oPNhZBccQkO9ijkLHoS6BlRvJtnuxY0ybduzpbKrfNFv0D4Xn5uu_UBFShq4KJlclBa2HZkzwu8rUsMyTYKB4l-bXepeiaSFR2X40CD0Mp7pQVK7QCuMsPfU_4ZXmUTKmaf_zny9irFFNBb_MCTy94bEDcz42JhtY6L97StQ",
 };
 
-const getRefreshedToken = async (refreshToken: string): Promise<string> => {
-  const link =
-    "https://securetoken.googleapis.com/v1/token?key=AIzaSyDXtoJRAEQCZL3nzNDToCHTtoBn2Y-g6jY";
-  const data = {
-    grant_type: "refresh_token",
-    refresh_token: refreshToken,
-  };
-
-  const config = {
-    headers: {
-      referer: "https://flowpodcast.com.br/",
-    },
-  };
-
-  try {
-    const request = await axios.post(link, data, config);
-    console.log(request.data)
-    return request.data.access_token;
-  } catch (e) {
-    console.log("ERRO: ", e);
-    throw new Error(e);
-  }
+const dudu = {
+  email: "eduardolima100@gmail.com",
+  refreshToken:
+    "AFxQ4_qxgFYDgu6n-0mf4-IYjUH4psG7gVXo_zpzbD-QX6DNLE-7I_qyYsLLK3eR3WmadjL-DzAw-1w5GOXotN7qqvp9AY3i_EUtKOq2LuaZfkKBB8XRMyuoiEZFLoeDsNM7gawPnFQhqza5TAhsXqiyi8rLlKKL3juwyYkTVtug6F8BMT-bytOs_Yo17QtB8WUFmCSNTCozEq-qUar60XX9OVFlfAfVeA",
 };
-
-const refreshToken =
-  "AFxQ4_pW17lthI8B6OsBp2VYN-yszncBv73QMlCgF6BFtf-FkQpmw-Wfn9oPNhZBccQkO9ijkLHoS6BlRvJtnuxY0ybduzpbKrfNFv0D4Xn5uu_UBFShq4KJlclBa2HZkzwu8rUsMyTYKB4l-bXepeiaSFR2X40CD0Mp7pQVK7QCuMsPfU_4ZXmUTKmaf_zny9irFFNBb_MCTy94bEDcz42JhtY6L97StQ";
 
 const run = async () => {
+console.log("$$ Rodando o BOT! $$");
+
   try {
-    const meuBearerToken = await getRefreshedToken(refreshToken);
-    const req = await getBadge(
-      "TRILHA",
-      "bruno.scastro2012@hotmail.com",
-      meuBearerToken
-    );
-    // console.log(req.status);
-    console.log(req.data.response.data);
+    const tone = new Account(tonelive.email, tonelive.refreshToken);
+    const lima = new Account(dudu.email, dudu.refreshToken);
+
+    lima.getBadge("quintavezdorato");
   } catch (e) {
     console.log(e.response.data);
   }
@@ -71,4 +39,3 @@ const run = async () => {
 
 run();
 
-console.log("Start");
