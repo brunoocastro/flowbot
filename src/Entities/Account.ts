@@ -43,7 +43,7 @@ export default class Account {
     }
   }
 
-  async getBadge(badgeName: string) {
+  async pickBadge(badgeName: string) {
     if (!this.canDoReq()) await this.updateAccessToken();
 
     const link =
