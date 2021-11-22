@@ -1,130 +1,80 @@
 // tslint:disable-next-line: no-var-requires
 require("dotenv").config();
 import axios from "axios";
-import moment from "moment";
-import Twit from "twit";
 import Account from "./Entities/account";
+import TwitterProvider from "./Providers/Twitter";
 
 import Repositories from "./Repositories";
 
-const Twitter = new Twit({
-  consumer_key: process.env.TWITTER_API_KEY,
-  consumer_secret: process.env.TWITTER_KEY_SECRET,
-  access_token: process.env.TWITTER_ACCESS_TOKEN,
-  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
-  timeout_ms: 60 * 1000,
-});
-
-const trustedAccounts = ["emblemasdoflow", "flowbadges"];
-
 const tonelive = {
   email: "bruno.scastro2012@hotmail.com",
+  username: "tonelive",
   refreshToken:
-    "AFxQ4_pW17lthI8B6OsBp2VYN-yszncBv73QMlCgF6BFtf-FkQpmw-Wfn9oPNhZBccQkO9ijkLHoS6BlRvJtnuxY0ybduzpbKrfNFv0D4Xn5uu_UBFShq4KJlclBa2HZkzwu8rUsMyTYKB4l-bXepeiaSFR2X40CD0Mp7pQVK7QCuMsPfU_4ZXmUTKmaf_zny9irFFNBb_MCTy94bEDcz42JhtY6L97StQ",
+    "AFxQ4_oPtCFHUNXE8sPZY0PwgY1H25fiWNvre1cnzbDE45O5vOyUwFTZzo_iL_I_c1aLtmhVcNxTSz0v6qrJoNuYEPmMM6qhYgpqbzJXTkfhpYjzQheoV1oino5b0ljr1XWS5scea_yyzsoz1X3NwpXItWIXWUhrcPl7M_kf7DAGhke8lDehKXpzigXqnf4m0gtJhhWnmRm1ezEAaJq7x9j_2zRodf_vqQ",
 };
 
 const dudu = {
   email: "eduardolima100@gmail.com",
+  username: "eduardolima100",
   refreshToken:
     "AFxQ4_qxgFYDgu6n-0mf4-IYjUH4psG7gVXo_zpzbD-QX6DNLE-7I_qyYsLLK3eR3WmadjL-DzAw-1w5GOXotN7qqvp9AY3i_EUtKOq2LuaZfkKBB8XRMyuoiEZFLoeDsNM7gawPnFQhqza5TAhsXqiyi8rLlKKL3juwyYkTVtug6F8BMT-bytOs_Yo17QtB8WUFmCSNTCozEq-qUar60XX9OVFlfAfVeA",
 };
 
-const getForAllAcc = (badgeName: string) => {};
-
-const getValidTweets = (tweetList: any[]) => {
-  console.log("Tweets List", tweetList);
-  const now = moment();
-  const validTweets = [];
-
-  for (const tweet of tweetList) {
-    const posted = moment(tweet.created_at);
-    const diference = moment.duration(now.diff(posted));
-    if (diference.asHours() > 24) continue;
-
-    const account = String(tweet.user.screen_name).toLowerCase();
-    if (!trustedAccounts.includes(account)) continue;
-
-    const text = String(tweet.text).toLowerCase();
-
-    console.log(text);
-    validTweets.push(text);
+const pickBadgesForAllAccounts = async (badges: string[]) => {
+  const accounts = await Repositories.AccountsRepository.getAll();
+  for (const badge of badges) {
+    for (const account of accounts) {
+      await account.pickBadge(badge);
+    }
   }
-
-  return validTweets;
 };
 
-const getTweets = async (trustedAccounts: string[]) => {
-  const tweetBaseParams = {
-    exclude_replies: true,
-    count: 10,
-  };
-  const tweetList = [];
-  trustedAccounts.forEach(async (accName: string) => {
-    await Twitter.get("statuses/user_timeline", {
-      screen_name: accName,
-      ...tweetBaseParams,
-    })
-      .then((response) => {
-        tweetList.push(Object.values(response.data)[0]);
-      })
-      .catch((e) => {
-        console.error(
-          `Não foi possível obter os dados da conta ${accName}.`,
-          e
-        );
-      });
-  });
-
-  return tweetList;
-};
-
-const getUsedBadges = async (tweetsList: string[]) => {
+const filterNewBadges = async (badgesList: string[]) => {
   const usedBadges = await Repositories.BadgesRepository.getUsedBadges();
-  return usedBadges
-};
-
-const getBadgesFromTweets = (tweetsList: string[]) => {
-  const badges = [];
-  for (const tweet of tweetsList) {
-    badges.push(tweet);
+  const newBadges = [];
+  for (const badge of badgesList) {
+    const cleanBadge = String(badge).toLowerCase();
+    if (usedBadges.includes(cleanBadge)) continue;
+    newBadges.push(cleanBadge);
   }
-  return badges;
+  return newBadges;
 };
 
 const searchForNewBadges = async () => {
-  const allTweets = await getTweets(trustedAccounts);
+  const allTweets = await TwitterInstance.getTweets();
 
-  const validTweets = getValidTweets(allTweets);
+  const validTweets = TwitterInstance.getValidTweets(allTweets);
 
-  const badges = getBadgesFromTweets(validTweets);
+  const badgesFromTweets = TwitterInstance.getBadgesFromTweets(validTweets);
+
+  const newBadges = await filterNewBadges(badgesFromTweets);
+
+  await pickBadgesForAllAccounts(newBadges);
+
+  console.log("Processo finalizado!");
 };
+
+const TwitterInstance = new TwitterProvider(searchForNewBadges);
 
 const tweets = [];
 const run = async () => {
   console.log("$$ Rodando o BOT! $$");
-  // const ToneTweets = Twitter.stream("statuses/filter", { track: "otonelive" });
-  // ToneTweets.on("tweet", function (tweet) {
-  //   console.log(tweet);
-  // });
-
   try {
-    const tweetWatcher = Twitter.stream("statuses/filter", {
-      track: trustedAccounts,
-    });
 
-    tweetWatcher.on("tweet", searchForNewBadges);
+    const tone = new Account(
+      tonelive.email,
+      tonelive.username,
+      tonelive.refreshToken
+    );
+    const lima = new Account(dudu.email, dudu.username, dudu.refreshToken);
 
-    // console.log(tweets);
-    // console.log(acc.data);
+    Repositories.AccountsRepository.set(tone);
+    Repositories.AccountsRepository.set(lima);
 
-    const tone = new Account(tonelive.email, tonelive.refreshToken);
-    const lima = new Account(dudu.email, dudu.refreshToken);
+    searchForNewBadges()
 
     const accounts = [tone, lima];
 
-    // FlowBadges.on("tweet", manageTweets);
-
-    // lima.getBadge("quintavezdorato");
   } catch (e) {
     console.error(e);
   }
