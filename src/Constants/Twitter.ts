@@ -1,3 +1,3 @@
-const trustedAccounts = ["emblemasdoflow", "flowbadges"];
+const trustedAccounts = ["flowbadges"];
 
 export default { trustedAccounts };

@@ -85,8 +85,7 @@ export default class Account {
       }
     } catch (e) {
       console.log(
-        `Erro ao pegar emblema ${badgeName} para ${this.username}`,
-        e.response.data
+        `Erro ao pegar emblema ${badgeName} para ${this.username}: ${e.response.data?.status?.message}`
       );
     }
     return;

@@ -1,10 +1,22 @@
-import moment from "moment";
+import moment, { lang } from "moment";
 import Twit from "twit";
 import constants from "../Constants/Twitter";
 import BadgesRepositoryInterface from "../Repositories/Badges/BadgesRepositoryInterface";
 
 export default class TwitterProvider {
   private twitter: Twit;
+
+  getBadgeText = {
+    flowbadges: (text: string): string => {
+      const regex = new RegExp(/(: )([a-z|à-ú|0-9]+)/g);
+      const splitLines = text.split("\n");
+      const line = splitLines[1];
+      const badgeWithPoints = line.match(regex)[0];
+      const badge = badgeWithPoints.substring(2);
+
+      return badge;
+    },
+  };
 
   constructor(newTweetCallback: VoidFunction) {
     this.twitter = new Twit({
@@ -22,22 +34,21 @@ export default class TwitterProvider {
   }
 
   public getValidTweets = (tweetList: any[]) => {
-    console.log("Tweets List", tweetList);
     const now = moment();
-    const validTweets = [];
+    const validTweets = {};
 
     for (const tweet of tweetList) {
-      const posted = moment(tweet.created_at);
+      const posted = moment(new Date(tweet.created_at));
       const diference = moment.duration(now.diff(posted));
       if (diference.asHours() > 24) continue;
-
       const account = String(tweet.user.screen_name).toLowerCase();
       if (!constants.trustedAccounts.includes(account)) continue;
 
       const text = String(tweet.text).toLowerCase();
 
-      console.log(text);
-      validTweets.push(text);
+      if (!validTweets[account]) validTweets[account] = [];
+
+      validTweets[account].push(text);
     }
 
     return validTweets;
@@ -47,33 +58,40 @@ export default class TwitterProvider {
     const tweetBaseParams = {
       exclude_replies: true,
       count: 10,
+      lang: "pt",
     };
     const tweetList = [];
-    constants.trustedAccounts.forEach(async (accName: string) => {
+    for (const accName of constants.trustedAccounts) {
+      console.log(`Buscando tweets no ${accName}`);
+      const params = {
+        screen_name: accName,
+        ...tweetBaseParams,
+      };
       await this.twitter
-        .get("statuses/user_timeline", {
-          screen_name: accName,
-          ...tweetBaseParams,
-        })
+        .get("statuses/user_timeline", params)
         .then((response) => {
-          tweetList.push(Object.values(response.data)[0]);
+          Object.values(response.data).forEach((item) => tweetList.push(item));
         })
         .catch((e) => {
           console.error(
-            `Não foi possível obter os dados da conta ${accName}.`,
+            `Não foi possível obter os dados do twitter ${accName}.`,
             e
           );
         });
-    });
+    }
 
     return tweetList;
   };
 
-  public getBadgesFromTweets = (tweetsList: string[]) => {
-    console.log('Lista de Tweets', tweetsList)
-    const badges = ['ÉTUDOIMPROVISO', 'NATALIECORTEZ', 'CONFORTO', 'BRS2EUA'];
-    for (const tweet of tweetsList) {
-      badges.push(tweet);
+  public getBadgesFromTweets = (tweetsList: { [key: string]: string[] }) => {
+    const badges = [];
+    for (const account of Object.keys(tweetsList)) {
+      for (const tweet of tweetsList[account]) {
+        console.log();
+        const badge = this.getBadgeText[account](tweet);
+        badges.push(badge);
+      }
+      // badges.push(tweet);
     }
     return badges;
   };

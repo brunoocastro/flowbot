@@ -67,13 +67,13 @@ const run = async () => {
     );
     const lima = new Account(dudu.email, dudu.username, dudu.refreshToken);
 
-    Repositories.AccountsRepository.set(tone);
-    Repositories.AccountsRepository.set(lima);
+    await Repositories.AccountsRepository.set(tone);
+    await Repositories.AccountsRepository.set(lima);
 
     // await getAccValue(tone);
     // await getAccValue(lima);
     // await getAccValue('bahamut');
-    
+
     searchForNewBadges();
   } catch (e) {
     console.error(e);
