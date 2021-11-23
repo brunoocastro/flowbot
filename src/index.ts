@@ -2,7 +2,7 @@
 require("dotenv").config();
 import axios from "axios";
 import moment from "moment";
-import Account from "./Entities/account";
+import Account from "./Entities/Account";
 import TwitterProvider from "./Providers/Twitter";
 import Repositories from "./Repositories";
 import getAccValue from "./Utils/GetAccValue";
