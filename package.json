@@ -4,6 +4,10 @@
   "description": "BOT DUS GURI",
   "main": "index.js",
   "module": "es2020",
+  "engines": {
+    "npm": ">=8.0.0",
+    "node": ">=14.0.0"
+  },
   "scripts": {
     "start": "tsc && node build/index.js",
     "build": "tsc",
