@@ -84,9 +84,13 @@ export default class Account {
         this.badges.push(badgeName);
       }
     } catch (e) {
-      console.log(
-        `Erro ao pegar emblema ${badgeName} para ${this.username}: ${e.response.data?.status?.message}`
-      );
+      if (e.response.data?.status?.reason === "badge/not-empty") {
+        this.badges.push(badgeName);
+        console.log(`${this.username} já resgatou o emblema ${badgeName}`);
+      } else
+        console.log(
+          `Erro ao pegar emblema ${badgeName} para ${this.username}: ${e.response.data?.status?.message}`
+        );
     }
     return;
   }
