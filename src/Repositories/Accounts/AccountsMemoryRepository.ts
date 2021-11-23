@@ -1,4 +1,4 @@
-import Account from "../../Entities/account";
+import Account from "../../Entities/Account";
 import AccountsRepository from "./AccountsRepositoryInterface";
 
 export default class AccountsMemoryRepository implements AccountsRepository {

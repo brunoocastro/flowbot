@@ -1,4 +1,4 @@
-import Account from "../../Entities/account";
+import Account from "../../Entities/Account";
 
 export default interface AccountsRepository {
   set(account: Account): Promise<string>;
