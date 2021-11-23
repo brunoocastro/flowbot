@@ -6,18 +6,19 @@ export default class Account {
   username: string;
   refreshToken: string;
   accessToken: string;
-  accessTokenExpiration: Moment = moment();
+  accessTokenExpiration: Moment = moment("2016-01-01");
   badges: string[] = [];
 
   constructor(email: string, username: string, refreshToken: string) {
     this.email = email;
     this.username = username;
     this.refreshToken = refreshToken;
+    this.verifyTokenValidation();
   }
 
-  verifyTokenValidation(): Promise<void> {
+  async verifyTokenValidation(): Promise<void> {
     const expired = this.accessTokenExpiration < moment();
-    if (expired) this.updateAccessToken();
+    if (expired) await this.updateAccessToken();
     return;
   }
 
@@ -59,7 +60,8 @@ export default class Account {
 
   async pickBadge(badgeName: string): Promise<void> {
     if (this.alreadyHaveBadge(badgeName)) return;
-    if (!this.verifyTokenValidation()) await this.updateAccessToken();
+
+    await this.verifyTokenValidation();
 
     const link =
       "https://flow3r-api-master-2eqj3fl3la-ue.a.run.app//v2/badges/redeem";
@@ -76,13 +78,11 @@ export default class Account {
     try {
       const request = await axios.post(link, data, config);
       if (request.status === 200) {
-        console.log(request.data);
         console.log(
           `Emblema ${badgeName} resgatado com sucesso para ${this.username}`
         );
-        this.badges.push(request.data);
+        this.badges.push(badgeName);
       }
-      console.log(request.data.response.data);
     } catch (e) {
       console.log(
         `Erro ao pegar emblema ${badgeName} para ${this.username}`,

@@ -3,8 +3,8 @@ require("dotenv").config();
 import axios from "axios";
 import Account from "./Entities/account";
 import TwitterProvider from "./Providers/Twitter";
-
 import Repositories from "./Repositories";
+import getAccValue from "./Utils/GetAccValue";
 
 const tonelive = {
   email: "bruno.scastro2012@hotmail.com",
@@ -60,7 +60,6 @@ const tweets = [];
 const run = async () => {
   console.log("$$ Rodando o BOT! $$");
   try {
-
     const tone = new Account(
       tonelive.email,
       tonelive.username,
@@ -71,10 +70,9 @@ const run = async () => {
     Repositories.AccountsRepository.set(tone);
     Repositories.AccountsRepository.set(lima);
 
-    searchForNewBadges()
-
-    const accounts = [tone, lima];
-
+    // await getAccValue(tone);
+    // await getAccValue(lima);
+    searchForNewBadges();
   } catch (e) {
     console.error(e);
   }

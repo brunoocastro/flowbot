@@ -71,7 +71,7 @@ export default class TwitterProvider {
 
   public getBadgesFromTweets = (tweetsList: string[]) => {
     console.log('Lista de Tweets', tweetsList)
-    const badges = ['reideroma'];
+    const badges = ['ÉTUDOIMPROVISO', 'NATALIECORTEZ', 'CONFORTO', 'BRS2EUA'];
     for (const tweet of tweetsList) {
       badges.push(tweet);
     }
