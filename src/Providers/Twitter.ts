@@ -8,7 +8,7 @@ export default class TwitterProvider {
 
   getBadgeText = {
     flowbadges: (text: string): string => {
-      const regex = new RegExp(/(: )([a-z|à-ú|0-9]+)/g);
+      const regex = new RegExp(/(: )([a-z|à-ú|0-9|!@#$%¨&*(){}<>,.;:/|\\ªº§]+)/g);
       const splitLines = text.split("\n");
       const line = splitLines[1];
       const badgeWithPoints = line.match(regex)[0];
@@ -87,11 +87,9 @@ export default class TwitterProvider {
     const badges = [];
     for (const account of Object.keys(tweetsList)) {
       for (const tweet of tweetsList[account]) {
-        console.log();
         const badge = this.getBadgeText[account](tweet);
         badges.push(badge);
       }
-      // badges.push(tweet);
     }
     return badges;
   };
