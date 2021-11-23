@@ -72,6 +72,8 @@ const run = async () => {
 
     // await getAccValue(tone);
     // await getAccValue(lima);
+    // await getAccValue('bahamut');
+    
     searchForNewBadges();
   } catch (e) {
     console.error(e);
