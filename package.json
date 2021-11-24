@@ -9,7 +9,7 @@
     "node": ">=14.0.0"
   },
   "scripts": {
-    "start": "tsc && node build/index.js",
+    "start": "ts-node src/index.ts",
     "build": "tsc",
     "postinstall": "npm run build"
   },
@@ -24,17 +24,19 @@
   },
   "homepage": "https://github.com/brunoocastro/flowbadges#readme",
   "devDependencies": {
-    "@types/node": "^16.11.9",
+    "@types/node": "^16.11.10",
     "@types/node-cron": "^3.0.0",
     "@types/twit": "^2.2.30",
+    "tslib": "^2.3.1",
     "tslint": "^6.1.3"
   },
   "dependencies": {
-    "typescript": "^4.5.2",
     "axios": "^0.24.0",
     "dotenv": "^10.0.0",
     "moment": "^2.29.1",
     "node-cron": "^3.0.0",
-    "twit": "^2.2.11"
+    "ts-node": "^10.4.0",
+    "twit": "^2.2.11",
+    "typescript": "^4.5.2"
   }
 }
