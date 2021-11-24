@@ -8,6 +8,7 @@ import Repositories from "./Repositories";
 import getAccValue from "./Utils/GetAccValue";
 import cron from "node-cron";
 import FlowProvider from "./Providers/Platform";
+import express from "express";
 
 const tonelive = {
   email: "bruno.scastro2012@hotmail.com",
@@ -151,9 +152,19 @@ const run = async () => {
   }
 
   cron.schedule("00 01,09,17 * * *", () => {
-    console.log(`[${moment().format("DD.MM.YYYY HH:mm:ss")}] - CRON CHAMANDO`)
+    console.log(`[${moment().format("DD.MM.YYYY HH:mm:ss")}] - CRON CHAMANDO`);
     searchForNewBadges();
   });
 };
 
-run();
+const app = express();
+const port = 3000;
+
+app.get("/", (req, res) => {
+  res.send("Sim, o bot tá funcionando!");
+});
+
+app.listen(port, () => {
+  console.log(`Rodando na porta ${port}`);
+  run();
+});

@@ -37,6 +37,7 @@ export default class FlowProvider {
   };
 
   public getBadgesFromProfiles = async () => {
+    console.log(`Buscando badges na plataforma do Flow!`);
     const badges = [];
 
     for (const account of this.trustedProfiles) {
