@@ -24,9 +24,9 @@ export default class FlowProvider {
       response.data.badges.forEach((badge) => {
         const expireDate = moment(badge.expires_at);
         const diference = moment.duration(now.diff(expireDate));
-        const diffInDays = Number(diference.asDays().toFixed(2));
+        const diffInHours = Number(diference.asHours().toFixed(2));
 
-        if (diffInDays < 1 && diffInDays !== 0) {
+        if (diffInHours < 0) {
           validProfileBadges.push(badge.code);
         }
       });
