@@ -8,7 +8,9 @@ export default class TwitterProvider {
 
   getBadgeText = {
     flowbadges: (text: string): string => {
-      const regex = new RegExp(/(: )([a-z|à-ú|0-9|!@#$%¨&*(){}<>,.;:/|\\ªº§]+)/g);
+      const regex = new RegExp(
+        /(: )([a-z|à-ú|0-9|!@#$%¨&*(){}<>,.;:/|\\ªº§]+)/g
+      );
       const splitLines = text.split("\n");
       const line = splitLines[1];
       const badgeWithPoints = line.match(regex)[0];
@@ -30,7 +32,14 @@ export default class TwitterProvider {
     const tweetWatcher = this.twitter.stream("statuses/filter", {
       track: constants.trustedAccounts,
     });
-    tweetWatcher.on("tweet", newTweetCallback);
+    tweetWatcher.on("tweet", () => {
+      console.log(
+        `[${moment().format(
+          "DD.MM.YYYY HH:mm:ss"
+        )}] - Novo Tweet de contas confiáveis`
+      );
+      newTweetCallback();
+    });
   }
 
   public getValidTweets = (tweetList: any[]) => {

@@ -7,6 +7,7 @@ import TwitterProvider from "./Providers/Twitter";
 import Repositories from "./Repositories";
 import getAccValue from "./Utils/GetAccValue";
 import cron from "node-cron";
+import FlowProvider from "./Providers/Platform";
 
 const tonelive = {
   email: "bruno.scastro2012@hotmail.com",
@@ -59,7 +60,8 @@ const filterNewBadges = async (badgesList: string[]) => {
   const newBadges = [];
   for (const badge of badgesList) {
     const cleanBadge = String(badge).toLowerCase();
-    if (usedBadges.includes(cleanBadge)) continue;
+    if (usedBadges.includes(cleanBadge) || newBadges.includes(cleanBadge))
+      continue;
     newBadges.push(cleanBadge);
   }
   return newBadges;
@@ -68,7 +70,7 @@ const filterNewBadges = async (badgesList: string[]) => {
 const searchForNewBadges = async () => {
   console.log(
     `${moment().format(
-      "DD.MM.YYYY HH:mm"
+      "DD.MM.YYYY HH:mm:ss"
     )} - Começando uma nova verificação de badges`
   );
   const allTweets = await TwitterInstance.getTweets();
@@ -77,9 +79,15 @@ const searchForNewBadges = async () => {
 
   const badgesFromTweets = TwitterInstance.getBadgesFromTweets(validTweets);
 
-  const newBadges = await filterNewBadges(badgesFromTweets);
+  const badgesFromProfiles = await PlatformInstance.getBadgesFromProfiles();
+
+  const allBadges = badgesFromTweets.concat(badgesFromProfiles);
+
+  const uniqueBadges = [...new Set(allBadges)];
+
+  const newBadges = await filterNewBadges(uniqueBadges);
   console.log(
-    `${moment().format("DD.MM.YYYY HH:mm")} - Foram encontradas ${
+    `[${moment().format("DD.MM.YYYY HH:mm:ss")}] - Foram encontradas ${
       newBadges.length
     } novas badges. \nLista de badges:`,
     newBadges
@@ -88,15 +96,18 @@ const searchForNewBadges = async () => {
   await pickBadgesForAllAccounts(newBadges);
 
   console.log(
-    `${moment().format("DD.MM.YYYY HH:mm")} - Processo de resgate finalizado!`
+    `[${moment().format(
+      "DD.MM.YYYY HH:mm:ss"
+    )}] - Processo de resgate finalizado!`
   );
 };
 
 const TwitterInstance = new TwitterProvider(searchForNewBadges);
+const PlatformInstance = new FlowProvider();
 
 const run = async () => {
   console.log(
-    `$$ ${moment().format("DD.MM.YYYY HH:mm")} - BOT DUS GURI ONLINE $$`
+    `$$ [${moment().format("DD.MM.YYYY HH:mm:ss")}] - BOT DUS GURI ONLINE $$`
   );
   try {
     const tone = new Account(
@@ -131,9 +142,8 @@ const run = async () => {
     await Repositories.AccountsRepository.set(ntv);
     await Repositories.AccountsRepository.set(ntvr);
 
-    // await getAccValue(tone);
-    // await getAccValue(lima);
-    // await getAccValue('bahamut');
+    // await getAccValue('dimi_');
+    // await getAccValue('gui_aguiar_');
 
     searchForNewBadges();
   } catch (e) {
@@ -141,6 +151,7 @@ const run = async () => {
   }
 
   cron.schedule("00 01,09,17 * * *", () => {
+    console.log(`[${moment().format("DD.MM.YYYY HH:mm:ss")}] - CRON CHAMANDO`)
     searchForNewBadges();
   });
 };
