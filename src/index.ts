@@ -8,7 +8,6 @@ import Repositories from "./Repositories";
 import getAccValue from "./Utils/GetAccValue";
 import cron from "node-cron";
 import FlowProvider from "./Providers/Platform";
-import express from "express";
 
 const tonelive = {
   email: "bruno.scastro2012@hotmail.com",
@@ -74,33 +73,38 @@ const searchForNewBadges = async () => {
       "DD.MM.YYYY HH:mm:ss"
     )} - Começando uma nova verificação de badges`
   );
-  const allTweets = await TwitterInstance.getTweets();
 
-  const validTweets = TwitterInstance.getValidTweets(allTweets);
+  try {
+    const allTweets = await TwitterInstance.getTweets();
 
-  const badgesFromTweets = TwitterInstance.getBadgesFromTweets(validTweets);
+    const validTweets = TwitterInstance.getValidTweets(allTweets);
 
-  const badgesFromProfiles = await PlatformInstance.getBadgesFromProfiles();
+    const badgesFromTweets = TwitterInstance.getBadgesFromTweets(validTweets);
 
-  const allBadges = badgesFromTweets.concat(badgesFromProfiles);
+    const badgesFromProfiles = await PlatformInstance.getBadgesFromProfiles();
 
-  const uniqueBadges = [...new Set(allBadges)];
+    const allBadges = badgesFromTweets.concat(badgesFromProfiles);
 
-  const newBadges = await filterNewBadges(uniqueBadges);
-  console.log(
-    `[${moment().format("DD.MM.YYYY HH:mm:ss")}] - Foram encontradas ${
-      newBadges.length
-    } novas badges. \nLista de badges:`,
-    newBadges
-  );
+    const uniqueBadges = [...new Set(allBadges)];
 
-  await pickBadgesForAllAccounts(newBadges);
+    const newBadges = await filterNewBadges(uniqueBadges);
+    console.log(
+      `[${moment().format("DD.MM.YYYY HH:mm:ss")}] - Foram encontradas ${
+        newBadges.length
+      } novas badges. \nLista de badges:`,
+      newBadges
+    );
 
-  console.log(
-    `[${moment().format(
-      "DD.MM.YYYY HH:mm:ss"
-    )}] - Processo de resgate finalizado!`
-  );
+    await pickBadgesForAllAccounts(newBadges);
+
+    console.log(
+      `[${moment().format(
+        "DD.MM.YYYY HH:mm:ss"
+      )}] - Processo de resgate finalizado!`
+    );
+  } catch (err) {
+    console.log(`Erro ao tentar resgatar emblemas.`, err);
+  }
 };
 
 const TwitterInstance = new TwitterProvider(searchForNewBadges);
@@ -157,14 +161,4 @@ const run = async () => {
   });
 };
 
-const app = express();
-const port = 3000;
-
-app.get("/", (req, res) => {
-  res.send("Sim, o bot tá funcionando!");
-});
-
-app.listen(port, () => {
-  console.log(`Rodando na porta ${port}`);
-  run();
-});
+run();
