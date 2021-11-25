@@ -41,6 +41,25 @@ async function getUserBadges(username: string) {
   return badgesList;
 }
 
+export async function getBadgesData() {
+  const linkAccBadges = `https://flow3r-api-master-2eqj3fl3la-ue.a.run.app//v2/user/badges/monark`;
+
+  const accBadges = await axios.get(linkAccBadges);
+
+  const badgesList = {};
+
+  let badgesArray = accBadges.data.badges;
+
+  badgesArray = badgesArray.sort(() => Math.random() - 0.5);
+
+  badgesArray.forEach((element) => {
+
+    if (element.code) badgesList[element.code] = element;
+  });
+
+  return badgesList;
+}
+
 const getAccValue = async (username: string) => {
   try {
     const badgesList = await getUserBadges(username);

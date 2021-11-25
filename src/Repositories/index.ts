@@ -1,10 +1,13 @@
 import AccountsMemoryRepository from "./Accounts/AccountsMemoryRepository";
-import BadgesMemoryRepository from "./Badges/BadgesMemoryRepository";
+import AccountsDataMongoRepository from "./AccountsData/AccountsMemoryRepository";
+import BadgesMongoRepository from "./Badges/BadgesMongoRepository";
 
-const BadgesRepository = new BadgesMemoryRepository();
+const BadgesRepository = new BadgesMongoRepository();
 const AccountsRepository = new AccountsMemoryRepository();
+const AccountsDataRepository = new AccountsDataMongoRepository()
 
 export default {
   BadgesRepository,
   AccountsRepository,
+  AccountsDataRepository
 };

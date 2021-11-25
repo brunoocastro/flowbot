@@ -7,12 +7,18 @@ export default class Account {
   refreshToken: string;
   accessToken: string;
   accessTokenExpiration: Moment = moment("2016-01-01");
-  badges: string[] = [];
+  badges: string[];
 
-  constructor(email: string, username: string, refreshToken: string) {
+  constructor(
+    email: string,
+    username: string,
+    refreshToken: string,
+    badges: string[] = []
+  ) {
     this.email = email;
     this.username = username;
     this.refreshToken = refreshToken;
+    this.badges = badges;
     this.verifyTokenValidation();
   }
 

@@ -10,27 +10,33 @@ import cron from "node-cron";
 import FlowProvider from "./Providers/Platform";
 import getMomentString from "./Utils/DateHelper";
 import AccountCreator from "./Utils/AccountCreator";
+import mongoose from "mongoose";
+
+import ManageBadgesService from "./Services/ManageBadgesService";
+
+const badgesManager = new ManageBadgesService();
 
 const pickBadgesForAllAccounts = async (badges: string[]) => {
   const accounts = await Repositories.AccountsRepository.getAll();
-  const usedBadges = await Repositories.BadgesRepository.getUsedBadges();
   for (const badge of badges) {
-    if (usedBadges.includes(badge)) continue;
+    const exists = await Repositories.BadgesRepository.isExistentBadge(badge);
+    if (exists) continue;
     for (const account of accounts) {
       await account.pickBadge(badge);
       await Repositories.AccountsRepository.set(account);
     }
-    await Repositories.BadgesRepository.addBadge(badge);
+    await badgesManager.addNewBadge(badge);
   }
 };
 
 const filterNewBadges = async (badgesList: string[]) => {
-  const usedBadges = await Repositories.BadgesRepository.getUsedBadges();
   const newBadges = [];
   for (const badge of badgesList) {
     const cleanBadge = String(badge).toLowerCase();
-    if (usedBadges.includes(cleanBadge) || newBadges.includes(cleanBadge))
-      continue;
+    const exists = await Repositories.BadgesRepository.isExistentBadge(
+      cleanBadge
+    );
+    if (exists || newBadges.includes(cleanBadge)) continue;
     newBadges.push(cleanBadge);
   }
   return newBadges;
@@ -75,6 +81,15 @@ const PlatformInstance = new FlowProvider();
 const run = async () => {
   console.log(`${getMomentString()} - $$ BOT DUS GURI ONLINE $$`);
   try {
+    if (!process.env.MONGO_URL)
+      throw new Error("MongoDB Server not initialized");
+
+    await mongoose
+      .connect(process.env.MONGO_URL)
+      .then(() => console.log(`${getMomentString()} - Conectado com o MongoDB`))
+      .catch((e) =>
+        console.log(`${getMomentString()} - Erro ao conectar com o MongoDB`, e)
+      );
     // await getAccValue('dimi_');
     // await getAccValue('gui_aguiar_');
     await AccountCreator();
