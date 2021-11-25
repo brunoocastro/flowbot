@@ -1,7 +1,8 @@
-import moment, { lang } from "moment";
+import moment from "moment";
 import Twit from "twit";
 import constants from "../Constants/Twitter";
 import BadgesRepositoryInterface from "../Repositories/Badges/BadgesRepositoryInterface";
+import getMomentString from "../Utils/DateHelper";
 
 export default class TwitterProvider {
   private twitter: Twit;
@@ -29,18 +30,54 @@ export default class TwitterProvider {
       timeout_ms: 60 * 1000,
     });
 
+    this.startTweetWatcher(newTweetCallback);
+  }
+
+  private startTweetWatcher = async (newTweetCallback: VoidFunction) => {
+    console.log(
+      `${getMomentString()} - Analisando em tempo real os tweets das contas ${
+        constants.possibleBadgePost
+      }`
+    );
+    const possibleBadgeIds = await this.getAccountsIds(
+      constants.possibleBadgePost
+    );
+
     const tweetWatcher = this.twitter.stream("statuses/filter", {
-      track: constants.trustedAccounts,
+      follow: possibleBadgeIds,
     });
-    tweetWatcher.on("tweet", () => {
+
+    tweetWatcher.on("tweet", (tweet) => {
       console.log(
-        `[${moment().format(
-          "DD.MM.YYYY HH:mm:ss"
-        )}] - Novo Tweet de contas confiáveis`
+        `${getMomentString()} - Novo Tweet de uma conta confiável -> ${
+          tweet.user.screen_name
+        }`
       );
       newTweetCallback();
     });
-  }
+  };
+
+  private getAccountsIds = async (AccList: string[]) => {
+    const IDList = [];
+    for (const accName of AccList) {
+      const params = {
+        screen_name: accName,
+        include_entities: false,
+      };
+      await this.twitter
+        .get("users/show", params)
+        .then((response: any) => {
+          IDList.push(response.data.id);
+        })
+        .catch((e) => {
+          console.error(
+            `Não foi possível obter o id do twitter ${accName}.`,
+            e
+          );
+        });
+    }
+    return IDList;
+  };
 
   public getValidTweets = (tweetList: any[]) => {
     const now = moment();
@@ -71,7 +108,9 @@ export default class TwitterProvider {
     };
     const tweetList = [];
     for (const accName of constants.trustedAccounts) {
-      console.log(`Buscando tweets no ${accName}`);
+      console.log(
+        `${getMomentString()} - Buscando tweets no perfil @${accName}`
+      );
       const params = {
         screen_name: accName,
         ...tweetBaseParams,

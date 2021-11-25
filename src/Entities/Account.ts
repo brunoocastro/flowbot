@@ -25,7 +25,9 @@ export default class Account {
   alreadyHaveBadge(badge: string) {
     const res = this.badges.includes(badge);
     if (res)
-      console.log(`O usuário ${this.username} já possui o emblema ${badge}`);
+      console.log(
+        `[${this.username}] - O usuário já possuia o emblema ${badge}`
+      );
     return res;
   }
 
@@ -51,7 +53,7 @@ export default class Account {
         "seconds"
       );
       console.log(
-        `O accessToken do ${this.username} foi atualizado com sucesso!`
+        `[${this.username}] - O accessToken foi atualizado com sucesso!`
       );
     } catch (e) {
       console.log(`Erro ao pegar o accessToken de ${this.username}: ${e}`);
@@ -79,17 +81,19 @@ export default class Account {
       const request = await axios.post(link, data, config);
       if (request.status === 200) {
         console.log(
-          `Emblema ${badgeName} resgatado com sucesso para ${this.username}`
+          `[${this.username}] - Emblema ${badgeName} resgatado com sucesso`
         );
         this.badges.push(badgeName);
       }
     } catch (e) {
       if (e.response.data?.status?.reason === "badge/not-empty") {
         this.badges.push(badgeName);
-        console.log(`${this.username} já resgatou o emblema ${badgeName}`);
+        console.log(
+          `[${this.username}] - O emblema ${badgeName} já foi resgatado`
+        );
       } else
         console.log(
-          `Erro ao pegar emblema ${badgeName} para ${this.username}: ${e.response.data?.status?.message}`
+          `Erro ao pegar emblema ${badgeName} para [${this.username}]: ${e.response.data?.status?.message}`
         );
     }
     return;

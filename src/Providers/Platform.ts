@@ -3,6 +3,7 @@ import moment, { lang } from "moment";
 import Twit from "twit";
 import constants from "../Constants/Twitter";
 import BadgesRepositoryInterface from "../Repositories/Badges/BadgesRepositoryInterface";
+import getMomentString from "../Utils/DateHelper";
 
 export default class FlowProvider {
   private link = (profileName: string) =>
@@ -37,7 +38,7 @@ export default class FlowProvider {
   };
 
   public getBadgesFromProfiles = async () => {
-    console.log(`Buscando badges na plataforma do Flow!`);
+    console.log(`${getMomentString()} - Buscando badges na plataforma do Flow!`);
     const badges = [];
 
     for (const account of this.trustedProfiles) {

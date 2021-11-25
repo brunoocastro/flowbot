@@ -8,6 +8,7 @@ import Repositories from "./Repositories";
 import getAccValue from "./Utils/GetAccValue";
 import cron from "node-cron";
 import FlowProvider from "./Providers/Platform";
+import getMomentString from "./Utils/DateHelper";
 
 const tonelive = {
   email: "bruno.scastro2012@hotmail.com",
@@ -69,9 +70,7 @@ const filterNewBadges = async (badgesList: string[]) => {
 
 const searchForNewBadges = async () => {
   console.log(
-    `${moment().format(
-      "DD.MM.YYYY HH:mm:ss"
-    )} - Começando uma nova verificação de badges`
+    `${getMomentString()} - Começando uma nova verificação de badges`
   );
 
   try {
@@ -89,74 +88,69 @@ const searchForNewBadges = async () => {
 
     const newBadges = await filterNewBadges(uniqueBadges);
     console.log(
-      `[${moment().format("DD.MM.YYYY HH:mm:ss")}] - Foram encontradas ${
+      `${getMomentString()} - Foram encontradas ${
         newBadges.length
-      } novas badges. \nLista de badges:`,
-      newBadges
+      } novas badges. \nLista de badges: ${newBadges}`
     );
 
     await pickBadgesForAllAccounts(newBadges);
 
-    console.log(
-      `[${moment().format(
-        "DD.MM.YYYY HH:mm:ss"
-      )}] - Processo de resgate finalizado!`
-    );
+    console.log(`${getMomentString()} - Processo de resgate finalizado!`);
   } catch (err) {
     console.log(`Erro ao tentar resgatar emblemas.`, err);
   }
+};
+
+const createAccounts = async () => {
+  const tone = new Account(
+    tonelive.email,
+    tonelive.username,
+    tonelive.refreshToken
+  );
+  const lima = new Account(
+    eduardolima100.email,
+    eduardolima100.username,
+    eduardolima100.refreshToken
+  );
+  const bruno = new Account(
+    brunoocastro.email,
+    brunoocastro.username,
+    brunoocastro.refreshToken
+  );
+  const ntv = new Account(
+    newstovideo.email,
+    newstovideo.username,
+    newstovideo.refreshToken
+  );
+  const ntvr = new Account(
+    newstovideorobot.email,
+    newstovideorobot.username,
+    newstovideorobot.refreshToken
+  );
+
+  await Repositories.AccountsRepository.set(tone);
+  await Repositories.AccountsRepository.set(lima);
+  await Repositories.AccountsRepository.set(bruno);
+  await Repositories.AccountsRepository.set(ntv);
+  await Repositories.AccountsRepository.set(ntvr);
 };
 
 const TwitterInstance = new TwitterProvider(searchForNewBadges);
 const PlatformInstance = new FlowProvider();
 
 const run = async () => {
-  console.log(
-    `$$ [${moment().format("DD.MM.YYYY HH:mm:ss")}] - BOT DUS GURI ONLINE $$`
-  );
+  console.log(`${getMomentString()} - $$ BOT DUS GURI ONLINE $$`);
   try {
-    const tone = new Account(
-      tonelive.email,
-      tonelive.username,
-      tonelive.refreshToken
-    );
-    const lima = new Account(
-      eduardolima100.email,
-      eduardolima100.username,
-      eduardolima100.refreshToken
-    );
-    const bruno = new Account(
-      brunoocastro.email,
-      brunoocastro.username,
-      brunoocastro.refreshToken
-    );
-    const ntv = new Account(
-      newstovideo.email,
-      newstovideo.username,
-      newstovideo.refreshToken
-    );
-    const ntvr = new Account(
-      newstovideorobot.email,
-      newstovideorobot.username,
-      newstovideorobot.refreshToken
-    );
-
-    await Repositories.AccountsRepository.set(tone);
-    await Repositories.AccountsRepository.set(lima);
-    await Repositories.AccountsRepository.set(bruno);
-    await Repositories.AccountsRepository.set(ntv);
-    await Repositories.AccountsRepository.set(ntvr);
-
     // await getAccValue('dimi_');
     // await getAccValue('gui_aguiar_');
-
-    searchForNewBadges();
+    await createAccounts();
+    await searchForNewBadges();
   } catch (e) {
     console.error(e);
   }
 
-  cron.schedule("00 01,09,17 * * *", () => {
-    console.log(`[${moment().format("DD.MM.YYYY HH:mm:ss")}] - CRON CHAMANDO`);
+  cron.schedule("00 00,06,12,18 * * *", () => {
+    console.log(`${getMomentString()} - CRON CHAMANDO`);
     searchForNewBadges();
   });
 };
