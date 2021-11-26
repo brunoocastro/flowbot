@@ -24,7 +24,7 @@ const AccountSchema = new Schema(
       trim: true,
     },
     refreshToken: { type: String, required: true },
-    badges: [{ type: Schema.Types.ObjectId, ref: "Bagde" }],
+    badges: [{ type: Schema.Types.String, ref: "Bagde" }],
   },
   { timestamps: true }
 );

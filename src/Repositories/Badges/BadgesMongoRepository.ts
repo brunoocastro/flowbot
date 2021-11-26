@@ -1,3 +1,4 @@
+import { isValidObjectId } from "mongoose";
 import Badge from "../../Schemas/Badge";
 import BadgesRepositoryInterface, {
   BadgeData,
@@ -11,6 +12,7 @@ export default class BadgesMongoRepository
   async addBadge(badge: BadgeData) {
     const badgeExists = await this.isExistentBadge(badge.name);
     if (!badgeExists) await Badge.create(badge);
+    // await Badge.updateOne({ name: badge.name }, badge, { upsert: true });
     return badge.name;
   }
 

@@ -1,29 +1,26 @@
 // tslint:disable-next-line: no-var-requires
 require("dotenv").config();
-import axios from "axios";
-import moment from "moment";
-import Account from "./Entities/Account";
+import mongoose from "mongoose";
 import TwitterProvider from "./Providers/Twitter";
 import Repositories from "./Repositories";
-import getAccValue from "./Utils/GetAccValue";
 import cron from "node-cron";
 import FlowProvider from "./Providers/Platform";
 import getMomentString from "./Utils/DateHelper";
-import AccountCreator from "./Utils/AccountCreator";
-import mongoose from "mongoose";
+import getAccValue from "./Utils/GetAccValue";
 
-import ManageBadgesService from "./Services/ManageBadgesService";
+import ManageBadgesService from "./Services/BadgesManagerService";
+import AccountManager from "./Services/AccountManagerService";
 
 const badgesManager = new ManageBadgesService();
 
 const pickBadgesForAllAccounts = async (badges: string[]) => {
   const accounts = await Repositories.AccountsRepository.getAll();
   for (const badge of badges) {
+    await badgesManager.addNewBadge(badge);
     for (const account of accounts) {
       await account.pickBadge(badge);
       await Repositories.AccountsRepository.set(account);
     }
-    await badgesManager.addNewBadge(badge);
   }
 };
 
@@ -34,7 +31,6 @@ const filterNewBadges = async (badgesList: string[]) => {
     const exists = await Repositories.BadgesRepository.isExistentBadge(
       cleanBadge
     );
-
     if (exists || newBadges.includes(cleanBadge)) continue;
     newBadges.push(cleanBadge);
   }
@@ -60,11 +56,16 @@ const searchForNewBadges = async () => {
     const uniqueBadges = [...new Set(allBadges)];
 
     const newBadges = await filterNewBadges(uniqueBadges);
-    console.log(
-      `\n${getMomentString()} - Foram encontradas ${
-        newBadges.length
-      } novas badges. \nLista de badges: ${newBadges}\n`
-    );
+
+    newBadges.length > 0
+      ? console.log(
+          `\n${getMomentString()} - Foram encontradas ${
+            newBadges.length
+          } novas badges. \nLista de badges: ${newBadges}\n`
+        )
+      : console.log(
+          `\n${getMomentString()} - Ainda não temos nenhuma nova badge!`
+        );
 
     await pickBadgesForAllAccounts(newBadges);
 
@@ -91,15 +92,25 @@ const run = async () => {
       );
     // await getAccValue('tonelive');
     // await getAccValue('gui_aguiar_');
-    await AccountCreator();
+    // await AccountManager.UpAccountsToMongo();
+    await AccountManager.LocalAccountUpdater();
     await searchForNewBadges();
   } catch (e) {
     console.error(e);
   }
 
-  cron.schedule("00 00,06,12,18 * * *", () => {
-    console.log(`${getMomentString()} - CRON CHAMANDO`);
+  // Todos os dias, 1x por hora, no minuto 0 e no minuto 30
+  cron.schedule("00 00,30 */1 * * * *", () => {
+    console.log(`${getMomentString()} - CRON CHAMANDO - Procurar emblemas`);
     searchForNewBadges();
+  });
+
+  // Todos os dias as 6h da manha e 18h
+  cron.schedule("00 00 6,18 * * * *", () => {
+    console.log(
+      `${getMomentString()} - CRON CHAMANDO - Atualizar contas locais`
+    );
+    AccountManager.LocalAccountUpdater();
   });
 };
 

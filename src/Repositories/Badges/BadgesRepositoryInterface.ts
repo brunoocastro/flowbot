@@ -1,3 +1,6 @@
+import { ObjectId } from "mongoose";
+import Badge from "../../Schemas/Badge";
+
 export interface BadgeData {
   name: string;
   expirationDate: Date;

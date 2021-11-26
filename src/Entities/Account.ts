@@ -1,5 +1,6 @@
 import axios from "axios";
 import moment, { Moment } from "moment";
+import Repositories from "../Repositories";
 
 export default class Account {
   email: string;
@@ -66,6 +67,11 @@ export default class Account {
     }
   }
 
+  private async setBadgeAsPicked(badgeName: string): Promise<void> {
+    await Repositories.AccountsDataRepository.addBadge(this.email, badgeName);
+    this.badges.push(badgeName);
+  }
+
   async pickBadge(badgeName: string): Promise<void> {
     if (this.alreadyHaveBadge(badgeName)) return;
 
@@ -89,11 +95,11 @@ export default class Account {
         console.log(
           `[${this.username}] - Emblema ${badgeName} resgatado com sucesso`
         );
-        this.badges.push(badgeName);
+        await this.setBadgeAsPicked(badgeName);
       }
     } catch (e) {
       if (e.response.data?.status?.reason === "badge/not-empty") {
-        this.badges.push(badgeName);
+        await this.setBadgeAsPicked(badgeName);
         console.log(
           `[${this.username}] - O emblema ${badgeName} já foi resgatado`
         );
