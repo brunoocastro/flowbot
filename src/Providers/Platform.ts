@@ -21,9 +21,14 @@ export default class FlowProvider {
           validProfileBadges.push(badge.code);
         }
       });
+      console.log(
+        `${getMomentString()} - Emblemas válidos encontrados na conta ${profileName}: ${validProfileBadges}`
+      );
       return validProfileBadges;
     } catch (err) {
-      console.log(err.data);
+      console.log(
+        `${getMomentString()} - Erro ao pegar emblemas válidos pra conta ${profileName}. Erro: ${err}`
+      );
     }
   };
 

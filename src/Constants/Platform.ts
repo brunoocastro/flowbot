@@ -9,6 +9,7 @@ const trustedProfiles: string[] = [
   "dimi_",
   "paiguim",
   "jhonzap.ink",
+  "tonelive",
 ];
 
 export default { link, trustedProfiles };

@@ -89,7 +89,7 @@ const run = async () => {
       .catch((e) =>
         console.log(`${getMomentString()} - Erro ao conectar com o MongoDB`, e)
       );
-    // await getAccValue('dimi_');
+    // await getAccValue('tonelive');
     // await getAccValue('gui_aguiar_');
     await AccountCreator();
     await searchForNewBadges();
