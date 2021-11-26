@@ -67,7 +67,7 @@ export default class TwitterProvider {
       await this.twitter
         .get("users/show", params)
         .then((response: any) => {
-          IDList.push(response.data.id);
+          IDList.push(Number(response.data.id));
         })
         .catch((e) => {
           console.error(
