@@ -101,9 +101,9 @@ const accounts: AccountsList = {
 };
 
 const AccountCreator = async () => {
-  const AllAccountsData = await Repositories.AccountsDataRepository.getAll();
-  console.log(AllAccountsData);
-  for (const account of AllAccountsData) {
+  // const AllAccountsData = await Repositories.AccountsDataRepository.getAll();
+  // console.log("all Acc Data", AllAccountsData);
+  for (const account of Object.values(accounts)) {
     await Repositories.AccountsRepository.set(
       new Account(
         account.email,

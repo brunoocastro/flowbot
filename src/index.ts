@@ -19,8 +19,6 @@ const badgesManager = new ManageBadgesService();
 const pickBadgesForAllAccounts = async (badges: string[]) => {
   const accounts = await Repositories.AccountsRepository.getAll();
   for (const badge of badges) {
-    const exists = await Repositories.BadgesRepository.isExistentBadge(badge);
-    if (exists) continue;
     for (const account of accounts) {
       await account.pickBadge(badge);
       await Repositories.AccountsRepository.set(account);
@@ -36,6 +34,7 @@ const filterNewBadges = async (badgesList: string[]) => {
     const exists = await Repositories.BadgesRepository.isExistentBadge(
       cleanBadge
     );
+
     if (exists || newBadges.includes(cleanBadge)) continue;
     newBadges.push(cleanBadge);
   }

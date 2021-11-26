@@ -1,25 +1,15 @@
 import axios from "axios";
 import moment, { lang } from "moment";
 import Twit from "twit";
-import constants from "../Constants/Twitter";
+import twitterConstants from "../Constants/Twitter";
+import platformConstants from "../Constants/Platform";
 import BadgesRepositoryInterface from "../Repositories/Badges/BadgesRepositoryInterface";
 import getMomentString from "../Utils/DateHelper";
 
 export default class FlowProvider {
-  private link = (profileName: string) =>
-    `https://flow3r-api-master-2eqj3fl3la-ue.a.run.app/v2/user/badges/${profileName}`;
-
-  private trustedProfiles: string[] = [
-    "veiguiz",
-    "monark",
-    "dekaibr",
-    "gui_aguiar_",
-    "dimi_",
-  ];
-
   private getValidProfileBadges = async (profileName: string) => {
     try {
-      const response = await axios.get(this.link(profileName));
+      const response = await axios.get(platformConstants.link(profileName));
       const now = moment();
       const validProfileBadges = [];
       response.data.badges.forEach((badge) => {
@@ -38,15 +28,18 @@ export default class FlowProvider {
   };
 
   public getBadgesFromProfiles = async () => {
-    console.log(`${getMomentString()} - Buscando badges na plataforma do Flow!`);
+    console.log(
+      `${getMomentString()} - Buscando badges na plataforma do Flow!`
+    );
     const badges = [];
 
-    for (const account of this.trustedProfiles) {
+    for (const account of platformConstants.trustedProfiles) {
       const valid = await this.getValidProfileBadges(account);
-      for (const badge of valid) {
-        const lowerBadge = String(badge).toLowerCase();
-        if (!badges.includes(lowerBadge)) badges.push(lowerBadge);
-      }
+      if (valid?.length > 0)
+        for (const badge of valid) {
+          const lowerBadge = String(badge).toLowerCase();
+          if (!badges.includes(lowerBadge)) badges.push(lowerBadge);
+        }
     }
     return badges;
   };
