@@ -1,5 +1,4 @@
 import moment from "moment";
-import FlowProvider from "../Providers/Platform";
 import TwitterProvider from "../Providers/Twitter";
 import Repositories from "../Repositories";
 import { BadgeData } from "../Repositories/Badges/BadgesRepositoryInterface";
@@ -17,13 +16,11 @@ const searchForNewBadges = async () => {
 
     const badgesFromTweets = TwitterInstance.getBadgesFromTweets(validTweets);
 
-    const badgesFromProfiles = await PlatformInstance.getBadgesFromProfiles();
+    // const allBadges = badgesFromTweets.concat(badgesFromProfiles);
 
-    const allBadges = badgesFromTweets.concat(badgesFromProfiles);
+    // const uniqueBadges = [...new Set(allBadges)];
 
-    const uniqueBadges = [...new Set(allBadges)];
-
-    const newBadges = await filterNewBadges(uniqueBadges);
+    const newBadges = await filterNewBadges(badgesFromTweets);
 
     newBadges.length > 0
       ? console.log(
@@ -44,7 +41,6 @@ const searchForNewBadges = async () => {
 };
 
 const TwitterInstance = new TwitterProvider(searchForNewBadges);
-const PlatformInstance = new FlowProvider();
 
 const addNewBadge = async (badge: string): Promise<string> => {
   try {
@@ -78,6 +74,7 @@ const filterNewBadges = async (badgesList: string[]) => {
     const exists = await Repositories.BadgesRepository.isExistentBadge(
       cleanBadge
     );
+    // const exists = false
     if (exists || newBadges.includes(cleanBadge)) continue;
     newBadges.push(cleanBadge);
   }
