@@ -9,7 +9,7 @@
     "node": ">=14.0.0"
   },
   "scripts": {
-    "start": "tsc && nodemon -x 'node build/index.js || touch build/index.js'",
+    "start": "tsc && node build/index.js",
     "dev": "nodemon --watch index --ext ts --exec ts-node --delay 3 src/index.ts",
     "build": "tsc",
     "postinstall": "npm run build"
