@@ -8,8 +8,10 @@ import getAccValue from "./Utils/GetAccValue";
 import ManageBadgesService from "./Services/BadgesManagerService";
 import ManageAccountsService from "./Services/AccountManagerService";
 
+console.log(`${getMomentString()} - $$ BOT DUS GURI ONLINE $$`);
 const run = async () => {
-  console.log(`${getMomentString()} - $$ BOT DUS GURI ONLINE $$`);
+  console.log(`${getMomentString()} - Fazendo a primeira verificação`);
+
   try {
     if (!process.env.MONGO_URL)
       throw new Error("MongoDB Server not initialized");
@@ -20,7 +22,7 @@ const run = async () => {
       .catch((e) =>
         console.log(`${getMomentString()} - Erro ao conectar com o MongoDB`, e)
       );
-    // await getAccValue('tonelive');
+    // await getAccValue("tonelive");
     // await AccountManager.UpAccountsToMongo();
 
     await ManageAccountsService.LocalAccountUpdater();
