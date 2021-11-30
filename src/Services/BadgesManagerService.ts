@@ -1,4 +1,5 @@
 import moment from "moment";
+import FlowProvider from "../Providers/Platform";
 import TwitterProvider from "../Providers/Twitter";
 import Repositories from "../Repositories";
 import { BadgeData } from "../Repositories/Badges/BadgesRepositoryInterface";
@@ -16,11 +17,11 @@ const searchForNewBadges = async () => {
 
     const badgesFromTweets = TwitterInstance.getBadgesFromTweets(validTweets);
 
-    // const allBadges = badgesFromTweets.concat(badgesFromProfiles);
+    const badgesFromProfiles = await PlatformInstance.getBadgesFromProfiles();
 
-    // const uniqueBadges = [...new Set(allBadges)];
+    const allBadges = badgesFromTweets.concat(badgesFromProfiles);
 
-    const newBadges = await filterNewBadges(badgesFromTweets);
+    const newBadges = [...new Set(allBadges)];
 
     newBadges.length > 0
       ? console.log(
@@ -41,6 +42,7 @@ const searchForNewBadges = async () => {
 };
 
 const TwitterInstance = new TwitterProvider(searchForNewBadges);
+const PlatformInstance = new FlowProvider();
 
 const addNewBadge = async (badge: string): Promise<string> => {
   try {
@@ -61,27 +63,15 @@ const pickBadgesForAllAccounts = async (badges: string[]) => {
   for (const badge of badges) {
     await addNewBadge(badge);
     for (const account of accounts) {
+      const alreadyHave = await account.alreadyHaveBadge(badge);
+      if (alreadyHave) continue;
+
       await account.pickBadge(badge);
       await Repositories.AccountsRepository.set(account);
     }
   }
 };
 
-const filterNewBadges = async (badgesList: string[]) => {
-  const newBadges = [];
-  for (const badge of badgesList) {
-    const cleanBadge = String(badge).toLowerCase();
-    const exists = await Repositories.BadgesRepository.isExistentBadge(
-      cleanBadge
-    );
-    // const exists = false
-    if (exists || newBadges.includes(cleanBadge)) continue;
-    newBadges.push(cleanBadge);
-  }
-  return newBadges;
-};
-
-
 export default {
-  searchForNewBadges
-}
+  searchForNewBadges,
+};
