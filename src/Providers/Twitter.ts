@@ -1,5 +1,6 @@
 import moment from "moment";
 import Twit from "twit";
+import { isNotEmittedStatement } from "typescript";
 import constants from "../Constants/Twitter";
 import BadgesRepositoryInterface from "../Repositories/Badges/BadgesRepositoryInterface";
 import getMomentString from "../Utils/DateHelper";
@@ -8,16 +9,19 @@ export default class TwitterProvider {
   private twitter: Twit;
 
   getBadgeText = {
-    flowbadges: (text: string): string => {
+    embflow: (text: string): string => {
       const regex = new RegExp(
         /(: )([a-z|à-ú|0-9|!@#$%¨&*(){}<>,.;:/|\\ªº§]+)/g
       );
       const splitLines = text.split("\n");
-      const line = splitLines[1];
-      const badgeWithPoints = line.match(regex)[0];
-      const badge = badgeWithPoints.substring(2);
-
-      return badge;
+      const line = splitLines[0];
+      const lineRegex = line.match(regex);
+      if (lineRegex) {
+        const badgeWithPoints = line.match(regex)[0];
+        const badge = badgeWithPoints.substring(2);
+        return badge;
+      }
+      return null;
     },
   };
 
@@ -103,7 +107,7 @@ export default class TwitterProvider {
   public getTweets = async () => {
     const tweetBaseParams = {
       exclude_replies: true,
-      count: 10,
+      count: 7,
       lang: "pt",
     };
     const tweetList = [];
@@ -118,7 +122,9 @@ export default class TwitterProvider {
       await this.twitter
         .get("statuses/user_timeline", params)
         .then((response) => {
-          Object.values(response.data).forEach((item) => tweetList.push(item));
+          Object.values(response.data).forEach((item) => {
+            tweetList.push(item);
+          });
         })
         .catch((e) => {
           console.error(
@@ -136,7 +142,7 @@ export default class TwitterProvider {
     for (const account of Object.keys(tweetsList)) {
       for (const tweet of tweetsList[account]) {
         const badge = this.getBadgeText[account](tweet);
-        badges.push(badge);
+        if (badge) badges.push(badge);
       }
     }
     return badges;

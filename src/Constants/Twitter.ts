@@ -1,4 +1,4 @@
-const trustedAccounts = ["flowbadges"];
-const possibleBadgePost = ["flowbadges", "flowemblemas", "emblemasdoflow"];
+const trustedAccounts = ["embflow"];
+const possibleBadgePost = ["embflow"];
 
 export default { trustedAccounts, possibleBadgePost };
