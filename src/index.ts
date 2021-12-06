@@ -7,6 +7,9 @@ import getAccValue from "./Utils/GetAccValue";
 
 import ManageBadgesService from "./Services/BadgesManagerService";
 import ManageAccountsService from "./Services/AccountManagerService";
+import DiscordProvider from "./Providers/Discord";
+
+const discordBot = new DiscordProvider();
 
 console.log(`${getMomentString()} - $$ BOT DUS GURI ONLINE $$`);
 const run = async () => {
@@ -25,8 +28,8 @@ const run = async () => {
     // await getAccValue("tonelive");
     // await AccountManager.UpAccountsToMongo();
 
-    await ManageAccountsService.LocalAccountUpdater();
-    await ManageBadgesService.searchForNewBadges();
+    // await ManageAccountsService.LocalAccountUpdater();
+    // await ManageBadgesService.searchForNewBadges();
   } catch (e) {
     console.error(e);
   }
@@ -40,7 +43,9 @@ cron.schedule("00 00,30 */1 * * * *", () => {
 
 // Todos os dias as 6h da manha e 18h
 cron.schedule("00 00 6,18 * * * *", () => {
-  console.log(`\n${getMomentString()} - CRON CHAMANDO - Atualizar contas locais\n`);
+  console.log(
+    `\n${getMomentString()} - CRON CHAMANDO - Atualizar contas locais\n`
+  );
   ManageAccountsService.LocalAccountUpdater();
 });
 
