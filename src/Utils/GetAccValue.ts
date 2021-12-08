@@ -50,7 +50,8 @@ const dataForUpdateOffer = (email: string, markedId: string, value: number) => {
 };
 
 export const verifyBadges = async (email: string, token: string) => {
-  const emblemas = [];
+  const badgedWithoutOffers = [];
+  const buyBadges = [];
   const config = {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -79,7 +80,7 @@ export const verifyBadges = async (email: string, token: string) => {
 
           if (!embData.data.actualTradesAsc[0]) {
             console.log(`O emblema ${code} não possui nem um anúncio`);
-            emblemas.push(code);
+            badgedWithoutOffers.push(code);
           } else {
             const lowerValue = embData.data.actualTradesAsc[0].value;
             console.log(
@@ -87,6 +88,7 @@ export const verifyBadges = async (email: string, token: string) => {
             );
 
             if (lowerValue <= thresholdBadgeValue) {
+              buyBadges.push(code);
               value = lowerValue;
             }
 
@@ -141,7 +143,8 @@ export const verifyBadges = async (email: string, token: string) => {
         console.error("Erro 2", error);
       }
     }
-    console.log("Emblemas sem nenhum anuncio:", emblemas);
+    console.log("Emblemas sem nenhum anuncio:", badgedWithoutOffers);
+    console.log("Emblemas que tentei comprar:", buyBadges);
   } catch (error) {
     console.error(error);
   }
