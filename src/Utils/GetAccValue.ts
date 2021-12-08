@@ -4,7 +4,7 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const thresholdBadgeValue = 4;
+const thresholdBadgeValue = 5;
 
 const embQuePossuo = (email: string) =>
   `https://stickers-flow3r-2eqj3fl3la-ue.a.run.app/v1/badges/private?email=${email}&sort=desc`;
@@ -71,7 +71,7 @@ export const verifyBadges = async (email: string, token: string) => {
         if (!emb.redeemed) {
           console.log(`Emblema ${code} não resgatado para ${email}`);
 
-          let value = 1;
+          let value = 3;
 
           const embData = await axios.get(
             encodeURI(dataDoEmblema(code)),
@@ -82,60 +82,53 @@ export const verifyBadges = async (email: string, token: string) => {
             console.log(`O emblema ${code} não possui nem um anúncio`);
             badgedWithoutOffers.push(code);
           } else {
-            const lowerValue = embData.data.actualTradesAsc[0].value;
+            const lowerValue = embData.data.actualTradesAsc[0].value || 0;
             console.log(
               `O valor mais baixo anunciado pro emblema ${code} é ${lowerValue}`
             );
 
-            if (lowerValue <= thresholdBadgeValue) {
+            if (lowerValue !== 0 && lowerValue <= thresholdBadgeValue + 0.1) {
               buyBadges.push(code);
               value = lowerValue;
             }
+          }
 
-            const verifyOffer = await axios.get(
-              verifyOfferLink(email, emb.badge_id),
-              config
-            );
+          const verifyOffer = await axios.get(
+            verifyOfferLink(email, emb.badge_id),
+            config
+          );
 
-            console.log(
-              `Verificando encomenda do emblema ${code}: `,
-              verifyOffer.data
-            );
-            if (verifyOffer.data.value !== value) {
-              await axios.options(offerLink, config);
-              if (
-                !verifyOffer.data.to_offer ||
-                verifyOffer.data.doc_id === null
-              ) {
-                console.log(`Tentando encomendar emblema ${code}`);
-                const doOffer = await axios.post(
-                  offerLink,
-                  dataForCreateOffer(email, emb.badge_id, value),
-                  config
-                );
-                console.log(
-                  `Emblema ${code} encomendado para ${email} por ${value}`,
-                  doOffer.data.status.message
-                );
-                await sleep(4000);
-              } else {
-                console.log(`Tentando atualizar encomenda do emblema ${code}`);
-                const updateOffer = await axios.patch(
-                  offerLink,
-                  dataForUpdateOffer(
-                    email,
-                    verifyOffer.data.doc_id,
-                    value | thresholdBadgeValue
-                  ),
-                  config
-                );
+          console.log(
+            `Verificando encomenda do emblema ${code}: Encomendado ? ${verifyOffer.data.to_offer}. Valor: ${verifyOffer.data.value}`
+          );
+          if (verifyOffer.data.value !== value) {
+            await axios.options(offerLink, config);
+            if (
+              !verifyOffer.data.to_offer ||
+              verifyOffer.data.doc_id === null
+            ) {
+              console.log(`Tentando encomendar emblema ${code}`);
+              const doOffer = await axios.post(
+                offerLink,
+                dataForCreateOffer(email, emb.badge_id, value),
+                config
+              );
+              console.log(
+                `Emblema ${code} encomendado para ${email} por ${value}`,
+                doOffer.data.status.message
+              );
+            } else {
+              console.log(`Tentando atualizar encomenda do emblema ${code}`);
+              const updateOffer = await axios.patch(
+                offerLink,
+                dataForUpdateOffer(email, verifyOffer.data.doc_id, value),
+                config
+              );
 
-                console.log(
-                  `[${email}] Encomenda do emblema ${code} atualizada para ${value} sparks.`,
-                  updateOffer.data.status.message
-                );
-                await sleep(4000);
-              }
+              console.log(
+                `[${email}] Encomenda do emblema ${code} atualizada para ${value} sparks.`,
+                updateOffer.data.status.message
+              );
             }
           }
         }
