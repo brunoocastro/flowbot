@@ -1,5 +1,152 @@
 import axios from "axios";
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const thresholdBadgeValue = 4;
+
+const embQuePossuo = (email: string) =>
+  `https://stickers-flow3r-2eqj3fl3la-ue.a.run.app/v1/badges/private?email=${email}&sort=desc`;
+// Bearer token
+const dataDoEmblema = (code) =>
+  `https://stickers-flow3r-2eqj3fl3la-ue.a.run.app/v1/market/feed?code=${code}`;
+
+const offerLink =
+  "https://stickers-flow3r-2eqj3fl3la-ue.a.run.app/v1/market/offer";
+
+const verifyOfferLink = (email: string, badgeId: string) =>
+  `https://stickers-flow3r-2eqj3fl3la-ue.a.run.app/v1/badges/market?email=${email}&type=offer&badge_id=${badgeId}`;
+
+const dataForCreateOffer = (email: string, badgeId: string, value: number) => {
+  const data = {
+    email,
+    badge_id: badgeId,
+    offer: {
+      sparks: { enabled: true, value },
+      badge: {
+        enabled: false,
+        value: [],
+      },
+    },
+  };
+
+  return data;
+};
+const dataForUpdateOffer = (email: string, markedId: string, value: number) => {
+  const data = {
+    email,
+    market_id: markedId,
+    offer: {
+      sparks: { enabled: true, value },
+      badge: {
+        enabled: false,
+        value: [],
+      },
+    },
+  };
+
+  return data;
+};
+
+export const verifyBadges = async (email: string, token: string) => {
+  const emblemas = [];
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const req = await axios.get(embQuePossuo(email), config);
+    // console.log(req.data.badges)
+
+    for (const emb of req.data.badges) {
+      // console.log("Emb", emb);
+      const code = emb.code;
+      console.log(code);
+
+      try {
+        if (!emb.redeemed) {
+          console.log(`Emblema ${code} não resgatado para ${email}`);
+
+          let value = 1;
+
+          const embData = await axios.get(
+            encodeURI(dataDoEmblema(code)),
+            config
+          );
+
+          if (!embData.data.actualTradesAsc[0]) {
+            console.log(`O emblema ${code} não possui nem um anúncio`);
+            emblemas.push(code);
+          } else {
+            const lowerValue = embData.data.actualTradesAsc[0].value;
+            console.log(
+              `O valor mais baixo anunciado pro emblema ${code} é ${lowerValue}`
+            );
+
+            if (lowerValue <= thresholdBadgeValue) {
+              value = lowerValue;
+            }
+
+            const verifyOffer = await axios.get(
+              verifyOfferLink(email, emb.badge_id),
+              config
+            );
+
+            console.log(
+              `Verificando encomenda do emblema ${code}: `,
+              verifyOffer.data
+            );
+            if (verifyOffer.data.value !== value) {
+              await axios.options(offerLink, config);
+              if (
+                !verifyOffer.data.to_offer ||
+                verifyOffer.data.doc_id === null
+              ) {
+                console.log(`Tentando encomendar emblema ${code}`);
+                const doOffer = await axios.post(
+                  offerLink,
+                  dataForCreateOffer(email, emb.badge_id, value),
+                  config
+                );
+                console.log(
+                  `Emblema ${code} encomendado para ${email} por ${value}`,
+                  doOffer.data.status.message
+                );
+                await sleep(4000);
+              } else {
+                console.log(`Tentando atualizar encomenda do emblema ${code}`);
+                const updateOffer = await axios.patch(
+                  offerLink,
+                  dataForUpdateOffer(
+                    email,
+                    verifyOffer.data.doc_id,
+                    value | thresholdBadgeValue
+                  ),
+                  config
+                );
+
+                console.log(
+                  `[${email}] Encomenda do emblema ${code} atualizada para ${value} sparks.`,
+                  updateOffer.data.status.message
+                );
+                await sleep(4000);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Erro 2", error);
+      }
+    }
+    console.log("Emblemas sem nenhum anuncio:", emblemas);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 async function getMediaFromBadge(badge: string) {
   const linkValue = `https://stickers-flow3r-2eqj3fl3la-ue.a.run.app/v1/market/graph?code=${badge}&type=trade&range=7days`;
   try {
@@ -53,7 +200,6 @@ export async function getBadgesData() {
   badgesArray = badgesArray.sort(() => Math.random() - 0.5);
 
   badgesArray.forEach((element) => {
-
     if (element.code) badgesList[element.code] = element;
   });
 
