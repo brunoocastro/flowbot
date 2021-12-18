@@ -11,7 +11,6 @@ import DiscordProvider from "./Providers/Discord";
 import Repositories from "./Repositories";
 import AccountManagerService from "./Services/AccountManagerService";
 
-const discordBot = new DiscordProvider();
 
 const manageMarket = async () => {
   try {
@@ -77,4 +76,5 @@ const StartBot = async () => {
   }
 };
 
+// const discordBot = new DiscordProvider();
 StartBot();

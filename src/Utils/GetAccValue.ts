@@ -61,6 +61,7 @@ export const verifyBadges = async (email: string, token: string) => {
   try {
     const req = await axios.get(embQuePossuo(email), config);
     // console.log(req.data.badges)
+    let valueRemaining = 0;
 
     for (const emb of req.data.badges) {
       // console.log("Emb", emb);
@@ -86,6 +87,10 @@ export const verifyBadges = async (email: string, token: string) => {
             console.log(
               `O valor mais baixo anunciado pro emblema ${code} é ${lowerValue}`
             );
+
+            if (embData.data.actualTradesAsc[0].value < 10000)
+              valueRemaining += embData.data.actualTradesAsc[0].value || 0;
+            continue;
 
             if (lowerValue !== 0 && lowerValue <= thresholdBadgeValue + 0.1) {
               buyBadges.push(code);
@@ -138,6 +143,7 @@ export const verifyBadges = async (email: string, token: string) => {
     }
     console.log("Emblemas sem nenhum anuncio:", badgedWithoutOffers);
     console.log("Emblemas que tentei comprar:", buyBadges);
+    console.log("Valor em sparks que falta:", valueRemaining);
   } catch (error) {
     console.error(error);
   }

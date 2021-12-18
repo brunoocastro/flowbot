@@ -1,16 +1,18 @@
 import Discord from "discord.js";
 import getMomentString from "../Utils/DateHelper";
 
+// import {} from '@discord.js/builders'
 export default class DiscordProvider {
   private discord: Discord.Client;
 
   constructor() {
-    this.discord = new Discord.Client({
-      intents: [Discord.Intents.FLAGS.GUILDS],
-      presence: { status: "online" },
-    });
+    this.discord = new Discord.Client();
+    //   {
+    //   intents: [Discord.Intents.FLAGS.GUILDS],
+    //   presence: { status: "online" },
+    // });
 
-    this.discord.on("ready", () => {
+    this.discord.once("ready", () => {
       console.log(
         `${getMomentString()} - BOT Online como ${this.discord.user.tag}!`
       );
@@ -22,13 +24,28 @@ export default class DiscordProvider {
   }
 
   startListeners = async () => {
-    console.log(await this.discord.guilds.fetch());
-    console.log(this.discord.channels);
+    // console.log(await this.discord.guilds.fetch());
+    console.log(this.discord.guilds);
 
-    this.discord.on("message", (message: Discord.Message) => {
-      console.log(message);
+    this.discord.on("message", async (message: Discord.Message) => {
       if (message.author.bot) return;
-      message.reply(`${message.content} teu cu`);
+
+      console.log(message);
+      // message.reply(`${message.content} teu cu`);
+      switch (message.content) {
+        case "teste":
+          message.reply("Funciona");
+          break;
+        case "george":
+          if (message.author.username.toLowerCase().includes("george")) {
+            message.reply("Sdds de ontem a noite, risos");
+          } else {
+            message.reply("Comi ele ontem");
+          }
+          break;
+        default:
+          break;
+      }
     });
 
     this.discord.on("interactionCreate", async (interaction) => {
