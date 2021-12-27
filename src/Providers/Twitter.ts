@@ -1,6 +1,5 @@
 import moment from "moment";
 import Twit from "twit";
-import { isNotEmittedStatement } from "typescript";
 import constants from "../Constants/Twitter";
 import BadgesRepositoryInterface from "../Repositories/Badges/BadgesRepositoryInterface";
 import getMomentString from "../Utils/DateHelper";
