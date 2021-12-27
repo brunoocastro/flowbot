@@ -11,17 +11,17 @@ const searchForNewBadges = async () => {
   );
 
   try {
-    // const allTweets = await TwitterInstance.getTweets();
+    const allTweets = await TwitterInstance.getTweets();
 
-    // const validTweets = TwitterInstance.getValidTweets(allTweets);
-    // const badgesFromTweets = TwitterInstance.getBadgesFromTweets(validTweets);
+    const validTweets = TwitterInstance.getValidTweets(allTweets);
+
+    const badgesFromTweets = TwitterInstance.getBadgesFromTweets(validTweets);
 
     const badgesFromProfiles = await PlatformInstance.getBadgesFromProfiles();
 
-    // const allBadges = badgesFromTweets.concat(badgesFromProfiles);
+    const allBadges = badgesFromTweets.concat(badgesFromProfiles);
 
-    // const newBadges = [...new Set(allBadges)];
-    const newBadges = [...new Set(badgesFromProfiles)];
+    const newBadges = [...new Set(allBadges)];
 
     newBadges.length > 0
       ? console.log(
@@ -41,7 +41,7 @@ const searchForNewBadges = async () => {
   }
 };
 
-// const TwitterInstance = new TwitterProvider(searchForNewBadges);
+const TwitterInstance = new TwitterProvider(searchForNewBadges);
 const PlatformInstance = new FlowProvider();
 
 const addNewBadge = async (badge: string): Promise<string> => {
