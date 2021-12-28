@@ -22,7 +22,7 @@ const run = async () => {
       .catch((e) =>
         console.log(`${getMomentString()} - Erro ao conectar com o MongoDB`, e)
       );
-    // await getAccValue("tonelive");
+    // await getAccValue("dekaibr");
     // await AccountManager.UpAccountsToMongo();
 
     await ManageAccountsService.LocalAccountUpdater();
