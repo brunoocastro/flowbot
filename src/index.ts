@@ -32,8 +32,8 @@ const run = async () => {
   }
 };
 
-// Todos os dias, 1x por hora, no minuto 0 e no minuto 30
-cron.schedule("00 00,30 */1 * * * *", () => {
+// Todos os dias, 1x por hora, no minuto 15
+cron.schedule("00 15 */1 * * * *", () => {
   console.log(`\n${getMomentString()} - CRON CHAMANDO - Procurar emblemas\n`);
   ManageBadgesService.searchForNewBadges();
 });
