@@ -12,7 +12,7 @@ const badgePrivateList = (email: string) =>
   `https://stickers-nv99-2eqj3fl3la-ue.a.run.app/v1/badges/private?email=${email}&sort=desc`;
 
 const myBadgesPrivateList = (email: string, username: string) =>
-  `https://stickers-nv99-2eqj3fl3la-ue.a.run.app/v1/badges/return/${username}/list?email=${email}`
+  `https://stickers-nv99-2eqj3fl3la-ue.a.run.app/v1/badges/return/${username}/list?email=${email}`;
 // Bearer token
 const dataDoEmblema = (code) =>
   `https://stickers-nv99-2eqj3fl3la-ue.a.run.app/v1/market/feed?code=${code}`;
@@ -57,9 +57,13 @@ const dataForUpdateOffer = (email: string, markedId: string, value: number) => {
   return data;
 };
 
-export const verifyBadges = async (username: string, email: string, token: string) => {
+export const verifyBadges = async (
+  username: string,
+  email: string,
+  token: string
+) => {
   const badgedWithoutOffers = [];
-  const notHave = []
+  const notHave = [];
   const buyBadges = [];
   const config = {
     headers: {
@@ -75,9 +79,9 @@ export const verifyBadges = async (username: string, email: string, token: strin
 
     for (const emb of req.data.badges) {
       const code = emb.code;
-      console.log(`\n[${code}] - ${emb.redeemed ? "TENHO" : 'Não tenho'}`, );
+      console.log(`\n[${code}] - ${emb.redeemed ? "TENHO" : "Não tenho"}`);
 
-      if (!emb.redeemed) notHave.push(code)
+      if (!emb.redeemed) notHave.push(code);
 
       try {
         const embData = await axios.get(encodeURI(dataDoEmblema(code)), config);
@@ -87,21 +91,22 @@ export const verifyBadges = async (username: string, email: string, token: strin
           badgedWithoutOffers.push(code);
         } else {
           const lowerValue = embData.data.actualTradesAsc[0].value || 0;
-          
-          const biggerValue = embData.data?.actualOffersDesc[0]?.offer.sparks.value || 0;
+          const biggerValue =
+            embData.data?.actualOffersDesc[0]?.offer.sparks.value || 0;
           console.log(
             `Menor oferta - ${lowerValue} Sparks | Maior encomenda - ${biggerValue} Sparks`
-          )
+          );
 
           if (emb.redeemed) {
-            valueAccumulated += biggerValue
+            valueAccumulated += biggerValue;
           } else {
             if (lowerValue === 0 || lowerValue >= thresholdBadgeValue - 0.01) {
-              if (embData.data.actualTradesAsc[0].value < higherLimit) valueRemaining += lowerValue;
-              continue
+              if (embData.data.actualTradesAsc[0].value < higherLimit)
+                valueRemaining += lowerValue;
+              continue;
             }
 
-            if (lowerValue < value) value = lowerValue
+            if (lowerValue < value) value = lowerValue;
 
             const verifyOffer = await axios.get(
               verifyOfferLink(email, emb.badge_id),
@@ -113,7 +118,10 @@ export const verifyBadges = async (username: string, email: string, token: strin
             );
             if (verifyOffer.data.value !== value) {
               await axios.options(offerLink, config);
-              if (!verifyOffer.data.to_offer || verifyOffer.data.doc_id === null) {
+              if (
+                !verifyOffer.data.to_offer ||
+                verifyOffer.data.doc_id === null
+              ) {
                 console.log(`-> Tentando encomendar emblema ${code}`);
                 const doOffer = await axios.post(
                   offerLink,
@@ -125,7 +133,9 @@ export const verifyBadges = async (username: string, email: string, token: strin
                   doOffer.data.status.message
                 );
               } else {
-                console.log(`-> Tentando atualizar encomenda do emblema ${code}`);
+                console.log(
+                  `-> Tentando atualizar encomenda do emblema ${code}`
+                );
                 const updateOffer = await axios.patch(
                   offerLink,
                   dataForUpdateOffer(email, verifyOffer.data.doc_id, value),
@@ -138,109 +148,114 @@ export const verifyBadges = async (username: string, email: string, token: strin
                 );
               }
             }
-          }}
-        } catch (error) {
-          console.error("Erro ao obter dados de um emblema: ", error?.response?.data);
+          }
         }
+      } catch (error) {
+        console.error(
+          "Erro ao obter dados de um emblema: ",
+          error?.response?.data
+        );
       }
-      console.log('-------------------------------------------------')
-      console.log("Emblemas sem nenhum anuncio:", badgedWithoutOffers);
-      console.log("Emblemas que tentei comprar:", buyBadges);
-      console.log("Valor em sparks que falta:", valueRemaining);
-      console.log("Valor em sparks que já tenho:", valueAccumulated);
-      console.log('-------------------------------------------------')
-
-      console.log(`\nLista de emblemas que ${username} não tem:`, notHave)
-    } catch (error) {
-      console.error("Erro na manipulação do mercado:", error?.response?.data);
     }
-  };
+    console.log("-------------------------------------------------");
+    console.log("Emblemas sem nenhum anuncio:", badgedWithoutOffers);
+    console.log("Emblemas que tentei comprar:", buyBadges);
+    console.log("Valor em sparks que falta:", valueRemaining);
+    console.log("Valor em sparks que já tenho:", valueAccumulated);
+    console.log("-------------------------------------------------");
 
-  async function getMediaFromBadge(badge: string) {
-    const linkValue = `https://stickers-nv99-2eqj3fl3la-ue.a.run.app/v1/market/graph?code=${badge}&type=trade&range=7days`;
-    try {
-      const req = await axios.get(linkValue);
-      const valuesArray = [];
-      req.data.dataset.forEach((value) => {
-        if (value > 0) valuesArray.push(value);
-      });
+    console.log(`\nLista de emblemas que ${username} não tem:`, notHave);
+  } catch (error) {
+    console.error("Erro na manipulação do mercado:", error?.response?.data);
+  }
+};
 
-      if (Array.isArray(valuesArray) && !valuesArray.length) {
-        console.log(`Média pro emblema ${badge} é nula`);
-        return 0;
-      }
-      const totalValue = valuesArray.reduce((soma, i) => soma + i);
-      const media = Number(totalValue / valuesArray.length);
-      // console.log(`Média pro emblema ${badge}: ${media} sparks`);
-      return media;
-    } catch {
-      console.log(`Deu erro pro emblema ${badge}`);
+async function getMediaFromBadge(badge: string) {
+  const linkValue = `https://stickers-nv99-2eqj3fl3la-ue.a.run.app/v1/market/graph?code=${badge}&type=trade&range=7days`;
+  try {
+    const req = await axios.get(linkValue);
+    const valuesArray = [];
+    req.data.dataset.forEach((value) => {
+      if (value > 0) valuesArray.push(value);
+    });
+
+    if (Array.isArray(valuesArray) && !valuesArray.length) {
+      console.log(`Média pro emblema ${badge} é nula`);
       return 0;
     }
+    const totalValue = valuesArray.reduce((soma, i) => soma + i);
+    const media = Number(totalValue / valuesArray.length);
+    // console.log(`Média pro emblema ${badge}: ${media} sparks`);
+    return media;
+  } catch {
+    console.log(`Deu erro pro emblema ${badge}`);
+    return 0;
   }
+}
 
-  async function getUserBadges(username: string) {
-    const linkAccBadges = `https://flow3r-api-master-2eqj3fl3la-ue.a.run.app//v2/user/badges/${username}`;
+async function getUserBadges(username: string) {
+  const linkAccBadges = `https://flow3r-api-master-2eqj3fl3la-ue.a.run.app//v2/user/badges/${username}`;
 
-    const accBadges = await axios.get(linkAccBadges);
+  const accBadges = await axios.get(linkAccBadges);
 
-    const badgesList = [];
+  const badgesList = [];
 
-    let badgesArray = accBadges.data.badges;
+  let badgesArray = accBadges.data.badges;
 
-    badgesArray = badgesArray.sort(() => Math.random() - 0.5);
+  badgesArray = badgesArray.sort(() => Math.random() - 0.5);
 
-    badgesArray.forEach((element) => {
-      if (element.code) badgesList.push(element.code);
-    });
+  badgesArray.forEach((element) => {
+    if (element.code) badgesList.push(element.code);
+  });
 
-    return badgesList;
-  }
+  return badgesList;
+}
 
-  export async function getBadgesData() {
-    const linkAccBadges = `https://flow3r-api-master-2eqj3fl3la-ue.a.run.app//v2/user/badges/monark`;
+export async function getBadgesData() {
+  const linkAccBadges = `https://flow3r-api-master-2eqj3fl3la-ue.a.run.app//v2/user/badges/monark`;
 
-    const accBadges = await axios.get(linkAccBadges);
+  const accBadges = await axios.get(linkAccBadges);
 
-    const badgesList = {};
+  const badgesList = {};
 
-    let badgesArray = accBadges.data.badges;
+  let badgesArray = accBadges.data.badges;
 
-    badgesArray = badgesArray.sort(() => Math.random() - 0.5);
+  badgesArray = badgesArray.sort(() => Math.random() - 0.5);
 
-    badgesArray.forEach((element) => {
-      if (element.code) badgesList[element.code] = element;
-    });
+  badgesArray.forEach((element) => {
+    if (element.code) badgesList[element.code] = element;
+  });
 
-    return badgesList;
-  }
+  return badgesList;
+}
 
-  const getAccValue = async (username: string) => {
-    try {
-      const badgesList = await getUserBadges(username);
-      // console.log("All Badges(", badgesList.length, ") :", badgesList);
+const getAccValue = async (username: string) => {
+  try {
+    const badgesList = await getUserBadges(username);
+    // console.log("All Badges(", badgesList.length, ") :", badgesList);
 
-      let valueInSparks = 0;
-      let failed = 0;
+    let valueInSparks = 0;
+    let failed = 0;
 
-      for (const badge of badgesList) {
-        const media = await getMediaFromBadge(encodeURIComponent(badge));
-        if (!media) failed += 1;
-        valueInSparks += media;
-      }
-
-      console.log(
-        `Valor final da conta do ${username}: ${valueInSparks.toFixed(
-          3
-        )} Sparks\nEle possui ${badgesList.length
-        } emblemas, mas não foi possível calcular o valor de ${failed} emblemas.`
-      );
-    } catch (e) {
-      console.log(
-        `Erro ao obter valor final da conta ${username}.`,
-        e.response.data
-      );
+    for (const badge of badgesList) {
+      const media = await getMediaFromBadge(encodeURIComponent(badge));
+      if (!media) failed += 1;
+      valueInSparks += media;
     }
-  };
 
-  export default getAccValue;
+    console.log(
+      `Valor final da conta do ${username}: ${valueInSparks.toFixed(
+        3
+      )} Sparks\nEle possui ${
+        badgesList.length
+      } emblemas, mas não foi possível calcular o valor de ${failed} emblemas.`
+    );
+  } catch (e) {
+    console.log(
+      `Erro ao obter valor final da conta ${username}.`,
+      e.response.data
+    );
+  }
+};
+
+export default getAccValue;

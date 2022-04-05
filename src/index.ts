@@ -75,7 +75,7 @@ const StartBot = async () => {
 
 
     // startSchedules();
-    firstVerify();
+    // firstVerify();
     manageMarket();
   } catch (e) {
     console.error(e);
