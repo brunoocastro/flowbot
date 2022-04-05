@@ -13,12 +13,13 @@ import AccountManagerService from "./Services/AccountManagerService";
 
 
 const manageMarket = async () => {
+  console.log("Iniciando controle de mercado")
   try {
     const toneliveData = await Repositories.AccountsRepository.get(
       "bruno.scastro2012@hotmail.com"
     );
     await toneliveData.verifyTokenValidation();
-    verifyBadges(toneliveData.email, toneliveData.accessToken);
+    verifyBadges(toneliveData.username, toneliveData.email, toneliveData.accessToken);
   } catch (e) {
     console.error("Error on Manage Market", e);
   }
@@ -66,19 +67,20 @@ const StartBot = async () => {
       );
 
     await ManageAccountsService.LocalAccountUpdater();
+
     // await AccountManagerService.UpAccountsToMongo();
 
-    // await getAccValue("dekaibr");
+    // await getAccValue("tonelive");
     // await AccountManager.UpAccountsToMongo();
 
 
     // startSchedules();
-    // firstVerify();
+    firstVerify();
     manageMarket();
   } catch (e) {
     console.error(e);
   }
 };
 
-// const discordBot = new DiscordProvider();
+const discordBot = new DiscordProvider();
 StartBot();

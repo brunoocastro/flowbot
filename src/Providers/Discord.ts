@@ -1,4 +1,5 @@
 import Discord from "discord.js";
+import DiscordChannels from "../Constants/Discord";
 import getMomentString from "../Utils/DateHelper";
 
 // import {} from '@discord.js/builders'
@@ -30,8 +31,13 @@ export default class DiscordProvider {
     this.discord.on("message", async (message: Discord.Message) => {
       if (message.author.bot) return;
 
-      console.log(message);
+      // console.log(message);
       // message.reply(`${message.content} teu cu`);
+      // if(message.)
+      // if (!message.channel.name.includes("bot-commands"))
+      // DiscordChannels.includes('')
+      // console.log("Dados", message.author.)
+
       switch (message.content) {
         case "teste":
           message.reply("Funciona");
@@ -48,19 +54,19 @@ export default class DiscordProvider {
       }
     });
 
-    this.discord.on("interactionCreate", async (interaction) => {
-      console.log(interaction.user);
-      if (!interaction.isCommand()) return;
+  //   this.discord.on("interactionCreate", async (interaction) => {
+  //     console.log(interaction.user);
+  //     if (!interaction.isCommand()) return;
 
-      const { commandName } = interaction;
+  //     const { commandName } = interaction;
 
-      if (commandName === "ping") {
-        await interaction.reply("Pong!");
-      } else if (commandName === "server") {
-        await interaction.reply("Server info.");
-      } else if (commandName === "user") {
-        await interaction.reply("User info.");
-      }
-    });
+  //     if (commandName === "ping") {
+  //       await interaction.reply("Pong!");
+  //     } else if (commandName === "server") {
+  //       await interaction.reply("Server info.");
+  //     } else if (commandName === "user") {
+  //       await interaction.reply("User info.");
+  //     }
+  //   });
   };
 }
