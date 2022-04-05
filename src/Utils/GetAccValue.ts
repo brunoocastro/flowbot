@@ -75,7 +75,7 @@ export const verifyBadges = async (username: string, email: string, token: strin
 
     for (const emb of req.data.badges) {
       const code = emb.code;
-      console.log(`\n[${code}] - Tenho ? `, emb.redeemed);
+      console.log(`\n[${code}] - ${emb.redeemed ? "TENHO" : 'Não tenho'}`, );
 
       if (!emb.redeemed) notHave.push(code)
 
@@ -83,18 +83,15 @@ export const verifyBadges = async (username: string, email: string, token: strin
         const embData = await axios.get(encodeURI(dataDoEmblema(code)), config);
 
         if (!embData.data.actualTradesAsc[0]) {
-          console.log(`O emblema ${code} não possui nem um anúncio`);
+          console.log(`-> O emblema ${code} não possui nem um anúncio`);
           badgedWithoutOffers.push(code);
         } else {
           const lowerValue = embData.data.actualTradesAsc[0].value || 0;
-          console.log(
-            ` \/ O MAIOR anuncio do emblema ${code} é ${lowerValue} Sparks`
-          );
-
+          
           const biggerValue = embData.data?.actualOffersDesc[0]?.offer.sparks.value || 0;
           console.log(
-            `/\ A MENOR encomenda pro emblema ${code} é ${biggerValue} Sparks`
-          );
+            `Menor oferta - ${lowerValue} Sparks | Maior encomenda - ${biggerValue} Sparks`
+          )
 
           if (emb.redeemed) {
             valueAccumulated += biggerValue
